@@ -30,7 +30,7 @@ The database consists of four main entities with the following relationships:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/holbertonschool-hbnb.git
+   git clone https://github.com/JaysonPasquier/holbertonschool-hbnb.git
    cd holbertonschool-hbnb/part3
    ```
 
