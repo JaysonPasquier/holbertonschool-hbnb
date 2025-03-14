@@ -1,6 +1,7 @@
 import logging
 from flask_restx import Namespace, Resource, fields
-from app.api.v1 import facade  # Import the shared facade instance
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.api.v1.services import facade
 
 logger = logging.getLogger(__name__)
 api = Namespace('places', description='Place operations')
@@ -33,8 +34,11 @@ class PlaceList(Resource):
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """Register a new place"""
+        """Create a new place (public endpoint)"""
         place_data = api.payload
+
+        # No longer force the owner_id to be the current user's ID
+        # The owner_id from the request will be used
 
         try:
             # Create place using the facade
@@ -93,12 +97,22 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def put(self, place_id):
-        """Update a place's information"""
+        """Update a place's information (owner or admin only)"""
         try:
+            current_user = get_jwt_identity()
+            is_admin = current_user.get('is_admin', False)
+
+            # Check if place exists
             place = facade.get_place(place_id)
             if not place:
                 return {'error': 'Place not found'}, 404
+
+            # Check if current user is the owner or an admin
+            if place.owner.id != current_user['id'] and not is_admin:
+                return {'error': 'Unauthorized action'}, 403
 
             update_data = api.payload
             logger.debug(f"Updating place {place_id} with data: {update_data}")

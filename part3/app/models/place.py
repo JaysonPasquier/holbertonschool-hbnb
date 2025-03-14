@@ -1,36 +1,45 @@
+from app.extensions import db
 from .base_model import BaseModel
-from .user import User
+
+# Association table for place-amenity many-to-many relationship
+place_amenity = db.Table('place_amenity',
+    db.Column('place_id', db.String(36), db.ForeignKey('places.id'), primary_key=True),
+    db.Column('amenity_id', db.String(36), db.ForeignKey('amenities.id'), primary_key=True)
+)
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner_id=None, owner=None):
+    """Place model representing accommodations"""
+    __tablename__ = 'places'
+
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    price = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+
+    # Relationships
+    reviews = db.relationship('Review', backref='place', cascade='all, delete-orphan')
+    amenities = db.relationship('Amenity', secondary=place_amenity, backref=db.backref('places', lazy='dynamic'))
+
+    def __init__(self, title, description, price, latitude, longitude, owner=None, owner_id=None):
         super().__init__()
         self.title = title
         self.description = description
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self._owner = None
-        self.owner_id = owner_id
+
         if owner:
-            self._owner = owner
+            self.owner = owner
             self.owner_id = owner.id
-        self.reviews = []
-        self.amenities = []
+        elif owner_id:
+            self.owner_id = owner_id
 
         self.validate_attributes()
 
-    @property
-    def owner(self):
-        return self._owner
-
-    @owner.setter
-    def owner(self, value):
-        if not isinstance(value, User):
-            raise ValueError("Owner must be an instance of User")
-        self._owner = value
-        self.owner_id = value.id
-
     def validate_attributes(self):
+        """Validate the place attributes"""
         if not isinstance(self.title, str) or not self.title:
             raise ValueError("Title must be a non-empty string")
         if not isinstance(self.description, str):
@@ -43,9 +52,12 @@ class Place(BaseModel):
             raise ValueError("Longitude must be a number between -180 and 180")
 
     def add_review(self, review):
-        """Add a review to the place."""
+        """Add a review to the place"""
         self.reviews.append(review)
+        db.session.commit()
 
     def add_amenity(self, amenity):
-        """Add an amenity to the place."""
-        self.amenities.append(amenity)
+        """Add an amenity to the place"""
+        if amenity not in self.amenities:
+            self.amenities.append(amenity)
+            db.session.commit()
