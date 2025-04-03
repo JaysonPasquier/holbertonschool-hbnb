@@ -1,2 +1,2 @@
 # holbertonschool-hbnb
-hbnb project with Ardonit Miuslu
+hbnb project with Ardonit Musliu
