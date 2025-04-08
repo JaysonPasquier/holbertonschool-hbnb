@@ -1,10 +1,8 @@
 import logging
+from flask_jwt_extended import create_access_token
 
-from app.persistence.repository import InMemoryRepository
-from app.models.user import User
-from app.models.amenity import Amenity
-from app.models.place import Place
-from app.models.review import Review
+from app.persistence.repository import SQLAlchemyRepository
+from app.models.database import User, Place, Review, Amenity
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -20,19 +18,51 @@ class HBnBFacade:
 
     def __init__(self):
         if not self._initialized:
-            self.user_repo = InMemoryRepository()
-            self.place_repo = InMemoryRepository()
-            self.amenity_repo = InMemoryRepository()
-            self.review_repo = InMemoryRepository()
+            self.user_repo = SQLAlchemyRepository(User)
+            self.place_repo = SQLAlchemyRepository(Place)
+            self.amenity_repo = SQLAlchemyRepository(Amenity)
+            self.review_repo = SQLAlchemyRepository(Review)
             self._initialized = True
 
+    # Authentication methods
+    def authenticate_user(self, email, password):
+        """Authenticate a user and return a token if valid"""
+        user = self.user_repo.get_by_attribute('email', email)
+        if user and user.verify_password(password):
+            # Generate access token with user identity and admin claim
+            additional_claims = {"is_admin": user.is_admin}
+            access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+            return {"access_token": access_token, "user_id": user.id}
+        return None
+
+    def register_user(self, user_data):
+        """Register a new user with password hashing"""
+        password = user_data.pop('password', None)
+
+        # Remove is_admin if it's in the data - regular registrations should never be admin
+        if 'is_admin' in user_data:
+            del user_data['is_admin']
+
+        # Check if email already exists
+        existing_user = self.get_user_by_email(user_data['email'])
+        if existing_user:
+            raise ValueError("Email already registered")
+
+        # Create a new user with the provided password
+        user = User(
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            email=user_data['email'],
+            password=password,  # This will be hashed in User.__init__
+            is_admin=False  # Always set to False for normal registration
+        )
+
+        # Save the user
+        return self.user_repo.add(user)
+
     def create_user(self, user_data):
-        logger.debug(f"Creating user with data: {user_data}")
-        user = User(**user_data)
-        user.validate()  # Appel de la méthode de validation
-        self.user_repo.add(user)
-        logger.debug(f"User created with ID: {user.id}")
-        return user
+        """Create user with backward compatibility"""
+        return self.register_user(user_data)
 
     def get_user(self, user_id):
         logger.debug(f"Looking for user with ID: {user_id}")
@@ -52,20 +82,21 @@ class HBnBFacade:
 
     def update_user(self, user_id, user_data):
         """Update user with new data"""
-        user = self.get_user(user_id)
-        if user:
-            self.user_repo.update(user_id, user_data)
-            return user
-        return None
+        # Handle password separately if provided
+        if 'password' in user_data:
+            password = user_data.pop('password')
+            user = self.get_user(user_id)
+            if user:
+                user.set_password(password)
 
+        return self.user_repo.update(user_id, user_data)
 
     def create_amenity(self, amenity_data):
         """Create a new amenity"""
         if len(amenity_data['name']) > 50:
             raise ValueError("Amenity name must be 50 characters or less")
         amenity = Amenity(**amenity_data)
-        self.amenity_repo.add(amenity)
-        return amenity
+        return self.amenity_repo.add(amenity)
 
     def get_amenity(self, amenity_id):
         """Get an amenity by ID"""
@@ -79,11 +110,7 @@ class HBnBFacade:
         """Update an amenity"""
         if 'name' in amenity_data and len(amenity_data['name']) > 50:
             raise ValueError("Amenity name must be 50 characters or less")
-        amenity = self.get_amenity(amenity_id)
-        if amenity:
-            self.amenity_repo.update(amenity_id, amenity_data)
-            return amenity
-        return None
+        return self.amenity_repo.update(amenity_id, amenity_data)
 
     def create_place(self, place_data):
         logger.debug(f"Attempting to create place with data: {place_data}")

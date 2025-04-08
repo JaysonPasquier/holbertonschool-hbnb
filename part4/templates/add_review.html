@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="add_review.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="/images/logo.png" alt="logo" class="logo">
+            </a>
+            <a href="login.html" id="login-link">Login</a>
+        </nav>
+    </header>
+    <main>
+        <div class="place-details">
+            <div id="place-loading">Loading place details...</div>
+            <div id="error" class="error" style="display: none;"></div>
+
+            <h1 id="review-title">Reviewing: <span id="place-title"></span></h1>
+
+            <section class="review-form">
+                <h2>Add a Review</h2>
+                <form id="review-form">
+                    <div class="form-group">
+                        <label for="review-text">Your Review:</label>
+                        <textarea id="review-text" name="text" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review-rating">Rating:</label>
+                        <select id="review-rating" name="rating" required>
+                            <option value="">Select a rating</option>
+                            <option value="5">5 Stars ★★★★★</option>
+                            <option value="4">4 Stars ★★★★☆</option>
+                            <option value="3">3 Stars ★★★☆☆</option>
+                            <option value="2">2 Stars ★★☆☆☆</option>
+                            <option value="1">1 Star ★☆☆☆☆</option>
+                        </select>
+                    </div>
+
+                    <div class="buttons-container">
+                        <a href="#" id="cancel-button" class="cancel-button">Cancel</a>
+                        <button type="submit" class="submit-button">Submit Review</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+    <footer>© Copyright 2025 hbnb. All rights reserved</footer>
+    <script src="add_review.js"></script>
+</body>
+</html>

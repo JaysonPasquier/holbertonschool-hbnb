@@ -1,8 +1,8 @@
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from app.api.v1 import facade  # Import the shared facade instance
 
 api = Namespace('reviews', description='Review operations')
-facade = HBnBFacade()
 
 # Define the review model for input validation and documentation
 review_model = api.model('Review', {
@@ -17,6 +17,7 @@ class ReviewList(Resource):
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()  # Protected endpoint
     def post(self):
         """Register a new review"""
         review_data = api.payload
@@ -33,6 +34,7 @@ class ReviewList(Resource):
             return {'error': str(e)}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
+    @jwt_required()  # Protected endpoint
     def get(self):
         """Retrieve a list of all reviews"""
         reviews = facade.get_all_reviews()
@@ -46,6 +48,7 @@ class ReviewList(Resource):
 class ReviewResource(Resource):
     @api.response(200, 'Review details retrieved successfully')
     @api.response(404, 'Review not found')
+    @jwt_required()  # Protected endpoint
     def get(self, review_id):
         """Get review details by ID"""
         review = facade.get_review(review_id)
@@ -63,6 +66,7 @@ class ReviewResource(Resource):
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()  # Protected endpoint
     def put(self, review_id):
         """Update a review's information"""
         review_data = api.payload
@@ -82,6 +86,7 @@ class ReviewResource(Resource):
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
+    @jwt_required()  # Protected endpoint
     def delete(self, review_id):
         """Delete a review"""
         if facade.delete_review(review_id):
@@ -92,6 +97,7 @@ class ReviewResource(Resource):
 class PlaceReviewList(Resource):
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
+    @jwt_required()  # Protected endpoint
     def get(self, place_id):
         """Get all reviews for a specific place"""
         try:

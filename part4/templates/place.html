@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Details</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="/images/logo.png" alt="logo" class="logo">
+            </a>
+            <a href="login.html" id="login-link">Login</a>
+        </nav>
+    </header>
+    <main>
+        <div class="place-details">
+            <div id="place-loading">Loading place details...</div>
+            <div id="place-error" class="error" style="display: none;"></div>
+            <h1 id="place-title"></h1>
+
+            <section class="place-info" style="display: none;">
+
+
+                <div class="info-line">
+                    <span class="info-label"><strong>Host:</strong></span>
+                    <span id="host-name"></span>
+                </div>
+
+                <div class="info-line">
+                    <span class="info-label"><strong>Price per night:</strong></span>
+                    $<span id="place-price"></span>
+                </div>
+
+                <div class="info-line">
+                    <span class="info-label"><strong>Description:</strong></span>
+                    <span id="place-description"></span>
+                </div>
+
+                <div class="info-line">
+                    <span class="info-label"><strong>Amenities:</strong></span>
+                    <span id="amenities-list"></span>
+                </div>
+            </section>
+
+            <section class="place-reviews">
+                <h2>Reviews</h2>
+                <div id="reviews-container" style="width: 100%;">
+                    <!-- Reviews will be loaded here -->
+                </div>
+                <div id="add-review-container">
+                    <button id="add-review-button" class="review-button">Write a Review</button>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer>© Copyright 2025 hbnb. All rights reserved</footer>
+    <script src="place.js"></script>
+</body>
+</html>

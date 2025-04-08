@@ -1,0 +1,73 @@
+.review-form {
+	background-color: white;
+	border-radius: 8px;
+	padding: 30px;
+	margin-bottom: 30px;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	width: 100%;
+}
+
+.form-group {
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: bold;
+}
+
+.form-group textarea {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	min-height: 150px;
+	resize: vertical;
+}
+
+.form-group select {
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	width: 100%;
+	max-width: 200px;
+}
+
+.buttons-container {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 30px;
+}
+
+.submit-button {
+	background-color: #ff9800;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 20px;
+	cursor: pointer;
+	font-weight: bold;
+	transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+	background-color: #f57c00;
+}
+
+.cancel-button {
+	background-color: #f4f4f4;
+	color: #333;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 20px;
+	cursor: pointer;
+	font-weight: bold;
+	text-decoration: none;
+	transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+	background-color: #e0e0e0;
+}

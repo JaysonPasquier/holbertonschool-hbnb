@@ -1,5 +1,6 @@
 import logging
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.api.v1 import facade  # Import the shared facade instance
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()  # Protected endpoint
     def post(self):
         """Register a new place"""
         place_data = api.payload
@@ -54,6 +56,7 @@ class PlaceList(Resource):
             return {'error': str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
+    @jwt_required()  # Protected endpoint
     def get(self):
         """Retrieve a list of all places"""
         places = facade.get_all_places()
@@ -72,6 +75,7 @@ class PlaceList(Resource):
 class PlaceResource(Resource):
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
+    @jwt_required()  # Protected endpoint
     def get(self, place_id):
         """Get place details by ID"""
         place = facade.get_place(place_id)
@@ -93,6 +97,7 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()  # Protected endpoint
     def put(self, place_id):
         """Update a place's information"""
         try:
