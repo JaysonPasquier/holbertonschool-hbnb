@@ -1,8 +1,18 @@
 import logging
+<<<<<<< HEAD
 from flask_jwt_extended import create_access_token
 
 from app.persistence.repository import SQLAlchemyRepository
 from app.models.database import User, Place, Review, Amenity
+=======
+from app.persistence.sqlalchemy_repository import SQLAlchemyRepository
+from app.models.user import User
+from app.models.amenity import Amenity
+from app.models.place import Place
+from app.models.review import Review
+from app.extensions import db
+from app.services.repositories.user_repository import UserRepository
+>>>>>>> e035b81927f95b19d67e8bf89273b43efd13b949
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -18,12 +28,19 @@ class HBnBFacade:
 
     def __init__(self):
         if not self._initialized:
+<<<<<<< HEAD
             self.user_repo = SQLAlchemyRepository(User)
+=======
+            # Replace generic repository with specialized UserRepository
+            self.user_repo = UserRepository()
+            # Keep other repositories as-is
+>>>>>>> e035b81927f95b19d67e8bf89273b43efd13b949
             self.place_repo = SQLAlchemyRepository(Place)
             self.amenity_repo = SQLAlchemyRepository(Amenity)
             self.review_repo = SQLAlchemyRepository(Review)
             self._initialized = True
 
+<<<<<<< HEAD
     # Authentication methods
     def authenticate_user(self, email, password):
         """Authenticate a user and return a token if valid"""
@@ -63,6 +80,26 @@ class HBnBFacade:
     def create_user(self, user_data):
         """Create user with backward compatibility"""
         return self.register_user(user_data)
+=======
+    # Update user-related methods to use the specialized repository
+
+    def create_user(self, user_data):
+        logger.debug(f"Creating user with data: {user_data}")
+        # Extract the password before creating the user
+        password = user_data.pop('password', None)
+
+        # Create user instance
+        user = User(**user_data)
+
+        # Hash the password if provided
+        if password:
+            user.hash_password(password)
+
+        user.validate()
+        self.user_repo.add(user)
+        logger.debug(f"User created with ID: {user.id}")
+        return user
+>>>>>>> e035b81927f95b19d67e8bf89273b43efd13b949
 
     def get_user(self, user_id):
         logger.debug(f"Looking for user with ID: {user_id}")
@@ -74,7 +111,8 @@ class HBnBFacade:
         return user
 
     def get_user_by_email(self, email):
-        return self.user_repo.get_by_attribute('email', email)
+        # Use the specialized method instead of get_by_attribute
+        return self.user_repo.get_by_email(email)
 
     def get_all_users(self):
         """Retrieve all users from the repository"""
@@ -82,6 +120,7 @@ class HBnBFacade:
 
     def update_user(self, user_id, user_data):
         """Update user with new data"""
+<<<<<<< HEAD
         # Handle password separately if provided
         if 'password' in user_data:
             password = user_data.pop('password')
@@ -90,6 +129,25 @@ class HBnBFacade:
                 user.set_password(password)
 
         return self.user_repo.update(user_id, user_data)
+=======
+        user = self.get_user(user_id)
+        if not user:
+            return None
+
+        # Handle password update separately
+        password = user_data.pop('password', None)
+        if password:
+            user.hash_password(password)
+
+        # Update other fields
+        for key, value in user_data.items():
+            if hasattr(user, key) and key != 'password':
+                setattr(user, key, value)
+
+        # Save changes
+        db.session.commit()
+        return user
+>>>>>>> e035b81927f95b19d67e8bf89273b43efd13b949
 
     def create_amenity(self, amenity_data):
         """Create a new amenity"""
@@ -162,66 +220,58 @@ class HBnBFacade:
             return None
 
         try:
-            # Validate core attributes if they're being updated
-            if 'title' in place_data:
-                if len(place_data['title']) > 100:
-                    raise ValueError("Title must be 100 characters or less")
-                place.title = place_data['title']
-
-            if 'description' in place_data:
-                place.description = place_data['description']
-
-            if 'price' in place_data:
-                if place_data['price'] < 0:
-                    raise ValueError("Price must be a non-negative number")
-                place.price = float(place_data['price'])
-
-            if 'latitude' in place_data:
-                if not (-90 <= place_data['latitude'] <= 90):
-                    raise ValueError("Latitude must be between -90 and 90")
-                place.latitude = float(place_data['latitude'])
-
-            if 'longitude' in place_data:
-                if not (-180 <= place_data['longitude'] <= 180):
-                    raise ValueError("Longitude must be between -180 and 180")
-                place.longitude = float(place_data['longitude'])
-
+            # Handle special relationships separately
             if 'owner_id' in place_data:
                 owner = self.user_repo.get(place_data['owner_id'])
-                if owner:
-                    place.owner = owner
-                else:
+                if not owner:
                     raise ValueError(f"Owner with id {place_data['owner_id']} not found")
+                place.owner = owner
+                place_data.pop('owner_id')
 
             if 'amenities' in place_data:
-                place.amenities = []  # Reset amenities
-                for amenity_id in place_data['amenities']:
+                amenity_ids = place_data.pop('amenities')
+                # Clear existing amenities
+                place.amenities = []
+                # Add new amenities
+                for amenity_id in amenity_ids:
                     amenity = self.amenity_repo.get(amenity_id)
                     if amenity:
                         place.add_amenity(amenity)
 
-            logger.debug(f"Successfully updated place {place_id}")
+            # Update regular attributes
+            for key, value in place_data.items():
+                setattr(place, key, value)
+
+            # Save changes
+            db.session.commit()
             return place
 
         except Exception as e:
             logger.error(f"Error updating place: {str(e)}")
+            db.session.rollback()
             raise ValueError(str(e))
 
     def create_review(self, review_data):
         if not (1 <= review_data['rating'] <= 5):
             raise ValueError("Rating must be between 1 and 5")
-        user = self.get_user(review_data['user_id'])
+
+        user_id = review_data.pop('user_id', None)
+        place_id = review_data.pop('place_id', None)
+
+        user = self.get_user(user_id)
         if not user:
             raise ValueError("User not found")
-        place = self.get_place(review_data['place_id'])
+
+        place = self.get_place(place_id)
         if not place:
             raise ValueError("Place not found")
+
         review = Review(
-            text=review_data['text'],
-            rating=review_data['rating'],
-            place=place,
-            user=user
+            **review_data,
+            user=user,
+            place=place
         )
+
         self.review_repo.add(review)
         return review
 
@@ -235,26 +285,26 @@ class HBnBFacade:
         place = self.get_place(place_id)
         if not place:
             raise ValueError("Place not found")
-        return [review for review in self.review_repo.get_all() if review.place.id == place_id]
+        return place.reviews
 
     def update_review(self, review_id, review_data):
-        review = self.review_repo.get(review_id)
-        if review:
-            if 'rating' in review_data and not (1 <= review_data['rating'] <= 5):
-                raise ValueError("Rating must be between 1 and 5")
-            self.review_repo.update(review_id, review_data)
-            return review
-        return None
+        if 'rating' in review_data and not (1 <= review_data['rating'] <= 5):
+            raise ValueError("Rating must be between 1 and 5")
+        return self.review_repo.update(review_id, review_data)
 
     def delete_review(self, review_id):
-        review = self.review_repo.get(review_id)
-        if review:
-            self.review_repo.delete(review_id)
-            return True
-        return False
+        return self.review_repo.delete(review_id)
 
     def is_valid_email(self, email):
         """Validate email format"""
         import re
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         return re.match(email_regex, email) is not None
+
+    def has_user_reviewed_place(self, user_id, place_id):
+        """Check if a user has already reviewed a place"""
+        reviews = self.get_reviews_by_place(place_id)
+        for review in reviews:
+            if review.user.id == user_id:
+                return True
+        return False

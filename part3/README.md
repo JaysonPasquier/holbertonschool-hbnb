@@ -1,199 +1,147 @@
-# HBNB - Holberton BnB
+# HBnB - Holberton Bed and Breakfast
 
-## Overview
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-red)](https://www.sqlalchemy.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.0-green)](https://flask.palletsprojects.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.0-blue)](https://www.sqlite.org/)
 
-This project is a web application for managing a Bed and Breakfast (BnB) service. It includes functionalities for managing users, places, reviews, and amenities. The application is built using Flask and Flask-RESTx for the API.
+## 📋 Overview
 
-## Project Structure
-```
-part2
-├── app
-│   ├── __init__.py
-│   ├── api
-│   │   ├── __init__.py
-│   │   ├── v1
-│   │       ├── __init__.py
-│   │       ├── users.py
-│   │       ├── places.py
-│   │       ├── reviews.py
-│   │       ├── amenities.py
-│   ├── models
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── place.py
-│   │   ├── review.py
-│   │   ├── amenity.py
-│   ├── services
-│   │   ├── __init__.py
-│   │   ├── facade.py
-│   ├── persistence
-│       ├── __init__.py
-│       ├── repository.py
-├── run.py
-├── config.py
-├── requirements.txt
-└── README.md
-```
+HBnB (Holberton Bed and Breakfast) is a web application for managing accommodations and bookings. This repository contains Part 3 of the project, focusing on **Database Implementation** using SQLAlchemy ORM and raw SQL.
 
-## Installation
+## 🗄️ Database Schema
+
+![HBnB ER Diagram](er-diagramme.png)
+
+The database consists of four main entities with the following relationships:
+- **User** → **Place**: One-to-many (A user can own many places)
+- **User** → **Review**: One-to-many (A user can write many reviews)
+- **Place** → **Review**: One-to-many (A place can have many reviews)
+- **Place** ↔ **Amenity**: Many-to-many (Places have amenities; amenities belong to places)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.8+
+- SQLite3
+- Flask
+- SQLAlchemy
+
+### Installation
+
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/hbnb.git
-   cd hbnb
+   git clone https://github.com/JaysonPasquier/holbertonschool-hbnb.git
+   cd holbertonschool-hbnb/part3
    ```
 
-2. Create a virtual environment:
+2. Create and activate a virtual environment:
    ```
    python -m venv venv
    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
    ```
 
-3. Install the required packages:
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-## Usage
-To run the application, execute the following command:
+### Database Setup
+
+#### Option 1: Using SQL Scripts
+```bash
+# Create database schema
+sqlite3 hbnb.db < create_tables.sql
+
+# Add initial data
+sqlite3 hbnb.db < insert_initial_data.sql
+
+# Verify setup
+sqlite3 hbnb.db < verify_database.sql
 ```
+
+#### Option 2: Using Python Scripts
+```bash
+# Create database tables
+python init_db.py create
+
+# Add sample data
+python init_db.py seed
+```
+
+## 🏃‍♂️ Running the Application
+
+Start the Flask server:
+```bash
 python run.py
 ```
-The server will start, and you can access the API at `http://localhost:5000/api/v1/`.
 
-## API Endpoints
-- **Users**: Manage user accounts and authentication.
-- **Places**: Manage places and their details.
-- **Reviews**: Manage reviews for places.
-- **Amenities**: Manage amenities associated with places.
+Access the API documentation at: http://localhost:5000/api/v1/
 
-## API Endpoints Details
+## 🧪 Testing
 
-### User Management API
-The User Management API provides endpoints for managing user accounts in the system.
-
-#### Endpoints:
-1. **Create User** (POST `/api/v1/users/`)
-   - Creates a new user account
-   - Request body:
-     ```json
-     {
-       "first_name": "John",
-       "last_name": "Doe",
-       "email": "john.doe@example.com"
-     }
-     ```
-   - Status codes:
-     - 201: User created successfully
-     - 400: Email already registered or invalid input
-
-2. **Get All Users** (GET `/api/v1/users/`)
-   - Returns a list of all users
-   - Status code: 200
-
-3. **Get User by ID** (GET `/api/v1/users/<user_id>`)
-   - Returns details of a specific user
-   - Status codes:
-     - 200: Success
-     - 404: User not found
-
-4. **Update User** (PUT `/api/v1/users/<user_id>`)
-   - Updates user information
-   - Request body: Same as create user
-   - Status codes:
-     - 200: User updated successfully
-     - 404: User not found
-     - 400: Invalid input data
-
-### Amenity Management API
-The Amenity Management API provides endpoints for managing amenities that can be associated with places.
-
-#### Endpoints:
-1. **Create Amenity** (POST `/api/v1/amenities/`)
-   - Creates a new amenity
-   - Request body:
-     ```json
-     {
-       "name": "Wi-Fi"
-     }
-     ```
-   - Status codes:
-     - 201: Amenity created successfully
-     - 400: Invalid input data
-
-2. **Get All Amenities** (GET `/api/v1/amenities/`)
-   - Returns a list of all amenities
-   - Status code: 200
-
-3. **Get Amenity by ID** (GET `/api/v1/amenities/<amenity_id>`)
-   - Returns details of a specific amenity
-   - Status codes:
-     - 200: Success
-     - 404: Amenity not found
-
-4. **Update Amenity** (PUT `/api/v1/amenities/<amenity_id>`)
-   - Updates amenity information
-   - Request body: Same as create amenity
-   - Status codes:
-     - 200: Amenity updated successfully
-     - 404: Amenity not found
-     - 400: Invalid input data
-
-## Business Logic
-The Business Logic layer is responsible for managing the core functionality of the application. It includes the following entities:
-
-### User
-Represents a user in the system.
-- **Attributes**: `id`, `name`, `email`, `password`
-- **Methods**:
-  - `create_user(name, email, password)`: Creates a new user.
-  - `get_user(user_id)`: Retrieves a user by ID.
-
-### Place
-Represents a place in the system.
-- **Attributes**: `id`, `name`, `description`, `location`, `price`
-- **Methods**:
-  - `create_place(name, description, location, price)`: Creates a new place.
-  - `get_place(place_id)`: Retrieves a place by ID.
-
-### Review
-Represents a review for a place.
-- **Attributes**: `id`, `user_id`, `place_id`, `rating`, `comment`
-- **Methods**:
-  - `create_review(user_id, place_id, rating, comment)`: Creates a new review.
-  - `get_review(review_id)`: Retrieves a review by ID.
-
-### Amenity
-Represents an amenity associated with a place.
-- **Attributes**: `id`, `name`
-- **Methods**:
-  - `create_amenity(name)`: Creates a new amenity.
-  - `get_amenity(amenity_id)`: Retrieves an amenity by ID.
-
-### Examples
-Here are some examples of how the classes and methods can be used:
-
-```python
-# Creating a new user
-user = User.create_user(name="John Doe", email="john@example.com", password="securepassword")
-
-# Retrieving a user by ID
-user = User.get_user(user_id=1)
-
-# Creating a new place
-place = Place.create_place(name="Cozy Cottage", description="A cozy cottage in the woods", location="123 Forest Lane", price=100)
-
-# Retrieving a place by ID
-place = Place.get_place(place_id=1)
-
-# Creating a new review
-review = Review.create_review(user_id=1, place_id=1, rating=5, comment="Amazing place!")
-
-# Retrieving a review by ID
-review = Review.get_review(review_id=1)
-
-# Creating a new amenity
-amenity = Amenity.create_amenity(name="WiFi")
-
-# Retrieving an amenity by ID
-amenity = Amenity.get_amenity(amenity_id=1)
+Run all tests:
+```bash
+python run_tests.py
 ```
+
+## 📁 Project Structure
+
+```
+part3/
+├── app/                    # Application code
+│   ├── api/                # API endpoints and serialization
+│   ├── models/             # SQLAlchemy models (entities)
+│   ├── persistence/        # Data access layer (repositories)
+│   └── services/           # Business logic and facades
+├── tests/                  # Test files
+├── *.sql                   # SQL scripts for database management
+├── config.py               # Application configuration
+├── init_db.py              # Database initialization utility
+├── run.py                  # Application entry point
+└── database_diagram.md     # Mermaid diagram source
+```
+
+## 📚 Key Features
+
+### 1. SQLAlchemy ORM Models
+- **User**: Account management with authentication
+- **Place**: Property listings with location and price
+- **Review**: User reviews for places with ratings
+- **Amenity**: Features that can be associated with places
+
+### 2. Repository Pattern
+- Abstraction of data access logic
+- Support for different storage backends
+- Clean separation of concerns
+
+### 3. SQL Scripts
+- `create_tables.sql`: Database schema creation
+- `insert_initial_data.sql`: Seeding initial data
+- `verify_database.sql`: Validation of database structure
+- `sample_queries.sql`: Example queries demonstrating relationships
+
+### 4. API Endpoints
+- **Users**: `/api/v1/users/` - Account management
+- **Places**: `/api/v1/places/` - Property listings
+- **Reviews**: `/api/v1/reviews/` - User reviews
+- **Amenities**: `/api/v1/amenities/` - Place features
+
+## ✅ Tasks Completed
+
+- [x] **Task 8**: Map the Place, Review, and Amenity Entities
+- [x] **Task 9**: Map Relationships Between Entities Using SQLAlchemy
+- [x] **Task 10**: SQL Scripts for Table Generation and Initial Data
+- [x] **Task 11**: Generate Database Diagrams
+
+## 📊 ER Diagram (Interactive)
+
+To view the interactive ER diagram:
+1. Open the `database_diagram.md` file
+2. Use a Markdown viewer that supports Mermaid diagrams
+3. Or paste the code into [Mermaid Live Editor](https://mermaid.live/)
+
+## 📚 Resources
+
+- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
+- [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/)
+- [Mermaid.js Diagram Syntax](https://mermaid-js.github.io/mermaid/#/)
