@@ -19,12 +19,8 @@ function checkAuthentication() {
     const loginLink = document.getElementById('login-link');
 
     if (token) {
-        // User is logged in, change login link to "My Account" or hide it
         loginLink.textContent = 'My Account';
-        // You could alternatively hide it:
-        // loginLink.style.display = 'none';
     } else {
-        // User is not logged in, ensure login link is visible
         loginLink.textContent = 'Login';
         loginLink.style.display = 'block';
     }
@@ -100,10 +96,8 @@ function displayPlaces(places) {
 function setupPriceFilter() {
     const priceFilter = document.getElementById('price-filter');
 
-    // Clear any existing options
     priceFilter.innerHTML = '';
 
-    // Add the required specific price options
     const options = [
         { value: 'all', text: 'All Prices' },
         { value: '10', text: '$10' },
@@ -118,13 +112,11 @@ function setupPriceFilter() {
         priceFilter.appendChild(optionElement);
     });
 
-    // The event listener will be added in populatePriceFilter
 }
 
 function populatePriceFilter(places) {
     const priceFilter = document.getElementById('price-filter');
 
-    // Set up event listener for price changes
     priceFilter.addEventListener('change', function() {
         if (this.value === 'all') {
             displayPlaces(places);

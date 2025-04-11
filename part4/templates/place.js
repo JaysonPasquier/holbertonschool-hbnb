@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    checkAuthentication();
+
     fetchPlaceDetails(placeId);
 
     fetchPlaceReviews(placeId);
@@ -192,4 +194,16 @@ function showError(message) {
     document.getElementById('place-loading').style.display = 'none';
     errorElement.textContent = message;
     errorElement.style.display = 'block';
+}
+
+function checkAuthentication() {
+    const token = localStorage.getItem('token') || getCookie('token');
+    const loginLink = document.getElementById('login-link');
+
+    if (token) {
+        loginLink.textContent = 'My Account';
+    } else {
+        loginLink.textContent = 'Login';
+        loginLink.style.display = 'block';
+    }
 }

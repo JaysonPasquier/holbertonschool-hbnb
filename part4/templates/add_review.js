@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fetchPlaceDetails(placeId);
 
+    checkAuthentication();
+
     document.getElementById('review-form').addEventListener('submit', function(e) {
         e.preventDefault();
         submitReview(placeId);
@@ -116,7 +118,6 @@ function submitReview(placeId) {
         return response.json();
     })
     .then(data => {
-        // Success Redirect back to the place page
         window.location.href = `/place.html?id=${placeId}`;
     })
     .catch(error => {
@@ -137,4 +138,17 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
     return null;
+}
+
+
+function checkAuthentication() {
+    const token = localStorage.getItem('token') || getCookie('token');
+    const loginLink = document.getElementById('login-link');
+
+    if (token) {
+        loginLink.textContent = 'My Account';
+    } else {
+        loginLink.textContent = 'Login';
+        loginLink.style.display = 'block';
+    }
 }
